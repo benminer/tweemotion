@@ -12,11 +12,6 @@ for item in array:
 
 for item in sentimentAndContent:
     content = item['content']
-    if 'the' in content:
-        content = content.replace('the', '')
-    if 'a' in content:
-        content = content.replace('a', '')
-    item['content'] = content
+    item['content'] = util.cleanString(content)
 
-#
-print(sentimentAndContent)
+# print(sentimentAndContent)
