@@ -86,6 +86,33 @@ def convertDataToInts(row, words, sentiments):
     return row
 
 
+def splitTrainingData(data):
+    sentiment_splits = [[], [], [], [], [], [], [], [], []]
+    for row in data:
+        for i in range(1, 10):
+            if int(row['sentiment']) == i:
+                sentiment_splits[i-1].append(row)
+
+    training = []
+    validation = []
+    testing = []
+    for li in sentiment_splits:
+        training += li[:1000]
+        validation += li[1000::2]
+        testing += li[1001::2]
+
+    return training, validation, testing
+
+
+def writeCsv(filename, data):
+    with open(filename, 'w') as csvfile:
+        fieldnames = ['sentiment', 'content']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in data:
+            writer.writerow(row)
+
+
 if __name__ == '__main__':
     data = readCsv('./data/text_emotion_full.csv')
     data = removeUnusedSentiments(data)
@@ -98,9 +125,11 @@ if __name__ == '__main__':
     with open('bag_of_words.json', 'w') as jsonfile:
         jsonfile.write(json.dumps(words))
 
-    with open('./data/text_emotion_ints.csv', 'w') as csvfile:
-        fieldnames = ['sentiment', 'content']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        for row in data:
-            row = convertDataToInts(row, words, sentiments)
-            writer.writerow(row)
+    for row in data:
+        row = convertDataToInts(row, words, sentiments)
+
+    training_set, validation_set, testing_set = splitTrainingData(data)
+
+    writeCsv('./data/training_set.csv', training_set)
+    writeCsv('./data/validation_set.csv', validation_set)
+    writeCsv('./data/testing_set.csv', testing_set)
