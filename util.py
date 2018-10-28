@@ -1,6 +1,7 @@
 import pandas as pd
 import csv
 import json
+import re
 
 
 def readCsv(filePath):
@@ -37,16 +38,18 @@ def removeUnusedSentiments(data):
 
 
 def convertSentimentToIntegers(sentiment_list):
-    sentiment_ints = []
+    sentiment_ints = {}
     for i in range(1, len(sentiment_list) + 1):
-        sentiment_ints.append({'integer': i, 'sentiment': sentiment_list[i-1]})
+        sentiment = sentiment_list[i-1]
+        sentiment_ints[sentiment] = i
     return sentiment_ints
 
 
 def convertWordsToIntegers(words):
-    word_ints = []
+    word_ints = {}
     for i in range(1, len(words) + 1):
-        word_ints.append({'integer': i, 'word': words[i - 1]})
+        word = words[i - 1]
+        word_ints[word] = i
     return word_ints
 
 
@@ -55,10 +58,13 @@ def makeDictionary(data):
     for row in data:
         content = row['content']
         for word in str.split(content):
-            if word in words.keys():
-                words[word] += 1
+            regex = re.compile('[@]')
+            if regex.match(word):
+                continue
+            if word.lower() in words.keys():
+                words[word.lower()] += 1
             else:
-                words[word] = 1
+                words[word.lower()] = 1
     frequent_words = []
     for word, count in words.items():
         frequent_words.append({'word': word, 'count': count})
@@ -70,14 +76,31 @@ def makeDictionary(data):
     return word_list
 
 
+def convertDataToInts(row, words, sentiments):
+    row['sentiment'] = sentiments[row['sentiment']]
+    new_content = ''
+    for word in row['content']:
+        if word in words.keys():
+            new_content += str(words[word]) + ' '
+    row['content'] = new_content
+    return row
+
+
 if __name__ == '__main__':
     data = readCsv('./data/text_emotion_full.csv')
+    data = removeUnusedSentiments(data)
     sentiments = getSentimentList(data)
     sentiments = convertSentimentToIntegers(sentiments)
     with open('sentiments.json', 'w') as jsonfile:
-        jsonfile.write(json.dumps({'sentiments': sentiments}))
+        jsonfile.write(json.dumps(sentiments))
     words = makeDictionary(data)
-    word_list = convertWordsToIntegers(words)
+    words = convertWordsToIntegers(words)
     with open('bag_of_words.json', 'w') as jsonfile:
-        dictionary = {'words': word_list}
-        jsonfile.write(json.dumps(dictionary))
+        jsonfile.write(json.dumps(words))
+
+    with open('./data/text_emotion_ints.csv', 'w') as csvfile:
+        fieldnames = ['sentiment', 'content']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        for row in data:
+            row = convertDataToInts(row, words, sentiments)
+            writer.writerow(row)
