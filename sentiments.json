@@ -1,0 +1,40 @@
+{
+  "sentiments": [
+    {
+      "integer": 1,
+      "sentiment": "sadness"
+    },
+    {
+      "integer": 2,
+      "sentiment": "neutral"
+    },
+    {
+      "integer": 3,
+      "sentiment": "worry"
+    },
+    {
+      "integer": 4,
+      "sentiment": "surprise"
+    },
+    {
+      "integer": 5,
+      "sentiment": "love"
+    },
+    {
+      "integer": 6,
+      "sentiment": "fun"
+    },
+    {
+      "integer": 7,
+      "sentiment": "hate"
+    },
+    {
+      "integer": 8,
+      "sentiment": "happiness"
+    },
+    {
+      "integer": 9,
+      "sentiment": "relief"
+    }
+  ]
+}
