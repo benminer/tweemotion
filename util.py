@@ -72,12 +72,11 @@ def makeDictionary(data):
     frequent_words.sort(key=(lambda x: x['count']), reverse=True)
     # Remove the top 10 most common words and then get the 5000 most frequently used ones
     # Returns as list of words
-    word_list = list(map(lambda x: x['word'], frequent_words[11:5011]))
+    word_list = list(map(lambda x: x['word'], frequent_words[11:10011]))
     return word_list
 
 
-def convertDataToInts(row, words, sentiments):
-    row['sentiment'] = sentiments[row['sentiment']]
+def convertDataToInts(row, words):
     new_content = ''
     for word in row['content']:
         if word in words.keys():
@@ -114,22 +113,15 @@ def writeCsv(filename, data):
 
 
 if __name__ == '__main__':
-    data = readCsv('./data/text_emotion_full.csv')
-    data = removeUnusedSentiments(data)
-    sentiments = getSentimentList(data)
-    sentiments = convertSentimentToIntegers(sentiments)
-    with open('sentiments.json', 'w') as jsonfile:
-        jsonfile.write(json.dumps(sentiments))
+    data = readCsv('./data/train.csv')
     words = makeDictionary(data)
     words = convertWordsToIntegers(words)
     with open('bag_of_words.json', 'w') as jsonfile:
         jsonfile.write(json.dumps(words))
 
     for row in data:
-        row = convertDataToInts(row, words, sentiments)
+        row = convertDataToInts(row, words)
 
-    training_set, validation_set, testing_set = splitTrainingData(data)
-
-    writeCsv('./data/training_set.csv', training_set)
-    writeCsv('./data/validation_set.csv', validation_set)
-    writeCsv('./data/testing_set.csv', testing_set)
+    # use 80000 entries to train, 20000 to validate
+    writeCsv('./data/training_set.csv', data[:80001])
+    writeCsv('./data/validation_set.csv', data[80001:])
