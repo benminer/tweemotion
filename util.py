@@ -9,7 +9,7 @@ def readCsv(filePath):
     with open(filePath) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            data.append({'sentiment': row['sentiment'], 'content': row['content']})
+            data.append({'sentiment': row['Sentiment'], 'content': row['SentimentText']})
     return data
 
 
@@ -98,8 +98,8 @@ def splitTrainingData(data):
     testing = []
     for li in sentiment_splits:
         training += li[:1000]
-        validation += li[1000::2]
-        testing += li[1001::2]
+        validation += li[1000:2000:2]
+        testing += li[1001:2000:2]
 
     return training, validation, testing
 
@@ -114,7 +114,7 @@ def writeCsv(filename, data):
 
 
 if __name__ == '__main__':
-    data = readCsv('./data/text_emotion_full.csv')
+    data = readCsv('./data/train.csv')
     data = removeUnusedSentiments(data)
     sentiments = getSentimentList(data)
     sentiments = convertSentimentToIntegers(sentiments)
