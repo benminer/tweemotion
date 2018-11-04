@@ -1,1 +1,10 @@
-{"sadness": 1, "neutral": 2, "worry": 3, "surprise": 4, "love": 5, "fun": 6, "hate": 7, "happiness": 8, "relief": 9}
+{
+  "sadness": 1,
+  "worry": 2,
+  "surprise": 3,
+  "love": 4,
+  "fun": 5,
+  "hate": 6,
+  "happiness": 7,
+  "relief": 8
+}

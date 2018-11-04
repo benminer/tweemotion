@@ -2,6 +2,19 @@ import pandas as pd
 import csv
 import json
 import re
+from random import shuffle
+
+
+def readOurCsv(filePath):
+    data = []
+    with open(filePath) as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            new_data = {}
+            for key in row.keys():
+                new_data[key] = row[key]
+            data.append(new_data)
+    return data
 
 
 def readCsv(filePath):
@@ -9,7 +22,9 @@ def readCsv(filePath):
     with open(filePath) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            data.append({'sentiment': row['Sentiment'], 'content': row['SentimentText']})
+            if row['sentiment'] == 'neutral':
+                continue
+            data.append({'sentiment': row['sentiment'], 'content': row['content']})
     return data
 
 
@@ -40,7 +55,7 @@ def removeUnusedSentiments(data):
 def convertSentimentToIntegers(sentiment_list):
     sentiment_ints = {}
     for i in range(1, len(sentiment_list) + 1):
-        sentiment = sentiment_list[i-1]
+        sentiment = sentiment_list[i - 1]
         sentiment_ints[sentiment] = i
     return sentiment_ints
 
@@ -76,8 +91,7 @@ def makeDictionary(data):
     return word_list
 
 
-def convertDataToInts(row, words, sentiments):
-    row['sentiment'] = sentiments[row['sentiment']]
+def convertDataToInts(row, words):
     new_content = ''
     for word in row['content']:
         if word in words.keys():
@@ -87,46 +101,56 @@ def convertDataToInts(row, words, sentiments):
 
 
 def splitTrainingData(data):
-    sentiment_splits = [[], [], [], [], [], [], [], [], []]
-    for row in data:
-        for i in range(1, 10):
-            if int(row['sentiment']) == i:
-                sentiment_splits[i-1].append(row)
+    shuffle(data)
 
     training = []
     validation = []
     testing = []
-    for li in sentiment_splits:
-        training += li[:1000]
-        validation += li[1000:2000:2]
-        testing += li[1001:2000:2]
+
+    training += data[:20000]
+    validation += data[20000::2]
+    testing += data[20001::2]
 
     return training, validation, testing
 
 
 def writeCsv(filename, data):
     with open(filename, 'w') as csvfile:
-        fieldnames = ['sentiment', 'content']
+        fieldnames = data[0].keys()
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for row in data:
             writer.writerow(row)
 
 
+def convertDataToBinary(data, sentiments):
+    new_data = []
+    for row in data:
+        new_row = {}
+        for sentiment in sentiments:
+            if row['sentiment'] == sentiment:
+                new_row[sentiment] = 1
+            else:
+                new_row[sentiment] = 0
+        new_row['content'] = row['content']
+        new_data.append(new_row)
+    return new_data
+
+
 if __name__ == '__main__':
-    data = readCsv('./data/train.csv')
+    data = readCsv('./data/text_emotion_full.csv')
     data = removeUnusedSentiments(data)
     sentiments = getSentimentList(data)
-    sentiments = convertSentimentToIntegers(sentiments)
-    with open('sentiments.json', 'w') as jsonfile:
-        jsonfile.write(json.dumps(sentiments))
+
+    data = convertDataToBinary(data, sentiments)
+
     words = makeDictionary(data)
     words = convertWordsToIntegers(words)
     with open('bag_of_words.json', 'w') as jsonfile:
         jsonfile.write(json.dumps(words))
 
     for row in data:
-        row = convertDataToInts(row, words, sentiments)
+        row = convertDataToInts(row, words)
 
     training_set, validation_set, testing_set = splitTrainingData(data)
 
