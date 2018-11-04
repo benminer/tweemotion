@@ -74,8 +74,10 @@ def makeDictionary(data):
         content = row['content']
         for word in str.split(content):
             regex = re.compile('[@]')
+            alphabetOnly = re.compile('[^a-zA-Z]')
             if regex.match(word):
                 continue
+            word = alphabetOnly.sub('', word)
             if word.lower() in words.keys():
                 words[word.lower()] += 1
             else:
@@ -85,9 +87,10 @@ def makeDictionary(data):
         frequent_words.append({'word': word, 'count': count})
 
     frequent_words.sort(key=(lambda x: x['count']), reverse=True)
+    print(len(frequent_words))
     # Remove the top 10 most common words and then get the 2000 most frequently used ones
     # Returns as list of words
-    word_list = list(map(lambda x: x['word'], frequent_words[20:5020]))
+    word_list = list(map(lambda x: x['word'], frequent_words))
     return word_list
 
 

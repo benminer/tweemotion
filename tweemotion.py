@@ -51,13 +51,18 @@ training_labels = np.array(training_labels)
 validation_data = np.array(validation_data)
 validation_labels = np.array(validation_labels)
 
-vocab_size = 5000
+vocab_size = 29542
 
 model = tf.keras.Sequential()
 model.add(tf.keras.layers.Embedding(vocab_size, 16))
 model.add(tf.keras.layers.GlobalAveragePooling1D())
 model.add(tf.keras.layers.Dense(64, activation=tf.nn.relu))
+model.add(tf.keras.layers.Dropout(0.3, noise_shape=None, seed=None))
+model.add(tf.keras.layers.Dense(64, activation=tf.nn.relu))
+model.add(tf.keras.layers.Dropout(0.5, noise_shape=None, seed=None))
+model.add(tf.keras.layers.Dense(64, activation=tf.nn.relu))
 model.add(tf.keras.layers.Dense(2, activation=tf.nn.softmax))
+# model.add(tf.keras.layers.Dense(2, activation=tf.nn.sigmoid))
 
 model.summary()
 
@@ -68,7 +73,7 @@ model.compile(optimizer='adam',
 history = model.fit(training_data,
                     training_labels,
                     epochs=100,
-                    batch_size=512,
+                    batch_size=256,
                     validation_data=(validation_data, validation_labels),
                     verbose=1)
 
