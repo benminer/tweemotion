@@ -4,9 +4,18 @@ import json
 import re
 
 
-def readCsv(filePath):
+def readDataSet(filePath):
     data = []
-    with open(filePath) as csvfile:
+    with open(filePath, encoding="ISO-8859-1") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            data.append({'sentiment': row['Sentiment'], 'content': row['SentimentText']})
+    return data
+
+
+def readOurCsv(filePath):
+    data = []
+    with open(filePath, encoding="ISO-8859-1") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             data.append({'sentiment': row['sentiment'], 'content': row['content']})
@@ -70,9 +79,9 @@ def makeDictionary(data):
         frequent_words.append({'word': word, 'count': count})
 
     frequent_words.sort(key=(lambda x: x['count']), reverse=True)
-    # Remove the top 10 most common words and then get the 5000 most frequently used ones
+    # Remove the top 10 most common words and then get the 10000 most frequently used ones
     # Returns as list of words
-    word_list = list(map(lambda x: x['word'], frequent_words[11:10011]))
+    word_list = list(map(lambda x: x['word'], frequent_words[21:10021]))
     return word_list
 
 
@@ -113,7 +122,7 @@ def writeCsv(filename, data):
 
 
 if __name__ == '__main__':
-    data = readCsv('./data/train.csv')
+    data = readDataSet('./data/train.csv')
     words = makeDictionary(data)
     words = convertWordsToIntegers(words)
     with open('bag_of_words.json', 'w') as jsonfile:
@@ -123,5 +132,5 @@ if __name__ == '__main__':
         row = convertDataToInts(row, words)
 
     # use 80000 entries to train, 20000 to validate
-    writeCsv('./data/training_set.csv', data[:80001])
-    writeCsv('./data/validation_set.csv', data[80001:])
+    writeCsv('./data/training_set.csv', data[:80000])
+    writeCsv('./data/validation_set.csv', data[80000:])
