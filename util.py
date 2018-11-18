@@ -92,7 +92,7 @@ def makeDictionary(data):
     print(len(frequent_words))
     # Remove the top 10 most common words and then get the 2000 most frequently used ones
     # Returns as list of words
-    word_list = list(map(lambda x: x['word'], frequent_words[20:5020]))
+    word_list = list(map(lambda x: x['word'], frequent_words))
     return word_list
 
 
