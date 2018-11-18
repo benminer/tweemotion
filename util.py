@@ -4,6 +4,8 @@ import json
 import re
 from random import shuffle
 
+thresholdCount = 2000
+
 
 def readOurCsv(filePath):
     data = []
@@ -19,7 +21,7 @@ def readOurCsv(filePath):
 
 def readCsv(filePath):
     data = []
-    with open(filePath) as csvfile:
+    with open(filePath, encoding='iso-8859-1') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             if row['sentiment'] == 'neutral':
@@ -38,7 +40,7 @@ def getSentimentList(data):
             sentiments[sentiment] = 1
     sentiments_list = []
     for key, value in sentiments.items():
-        if value > 1000:
+        if value > thresholdCount:
             sentiments_list.append(key)
     return sentiments_list
 
@@ -90,7 +92,7 @@ def makeDictionary(data):
     print(len(frequent_words))
     # Remove the top 10 most common words and then get the 2000 most frequently used ones
     # Returns as list of words
-    word_list = list(map(lambda x: x['word'], frequent_words))
+    word_list = list(map(lambda x: x['word'], frequent_words[20:5020]))
     return word_list
 
 
@@ -104,15 +106,19 @@ def convertDataToInts(row, words):
 
 
 def splitTrainingData(data):
-    shuffle(data)
+    sadness = data[:2000]
+    worry = data[2000:4000]
+    surprise = data[4000:6000]
+    love = data[6000:8000]
+    happiness = data[8000:10000]
 
-    training = []
-    validation = []
-    testing = []
+    training = sadness[:1500] + worry[:1500] + surprise[:1500] + love[:1500] + happiness[:1500]
+    validation = sadness[1500::2] + worry[1500::2] + surprise[1500::2] + love[1500::2] + happiness[1500::2]
+    testing = sadness[1501::2] + worry[1501::2] + surprise[1501::2] + love[1501::2] + happiness[1501::2]
 
-    training += data[:20000]
-    validation += data[20000::2]
-    testing += data[20001::2]
+    shuffle(training)
+    shuffle(validation)
+    shuffle(testing)
 
     return training, validation, testing
 
@@ -140,12 +146,40 @@ def convertDataToBinary(data, sentiments):
     return new_data
 
 
+def normalizeData(data):
+
+    sadnessCount = []
+    worryCount = []
+    surpriseCount = []
+    loveCount = []
+    # funCount = 0
+    happinessCount = []
+    # reliefCount = 0
+
+    for row in data:
+        if row['sadness'] and len(sadnessCount) < thresholdCount:
+            sadnessCount.append(row)
+        elif row['worry'] and len(worryCount) < thresholdCount:
+            worryCount.append(row)
+        elif row['surprise'] and len(surpriseCount) < thresholdCount:
+            surpriseCount.append(row)
+        elif row['love'] and len(loveCount) < thresholdCount:
+            loveCount.append(row)
+        elif row['happiness'] and len(happinessCount) < thresholdCount:
+            happinessCount.append(row)
+    newData = sadnessCount + worryCount + surpriseCount + loveCount + happinessCount
+    return newData
+
+
 if __name__ == '__main__':
     data = readCsv('./data/text_emotion_full.csv')
     data = removeUnusedSentiments(data)
     sentiments = getSentimentList(data)
 
     data = convertDataToBinary(data, sentiments)
+
+    # Normalizing data to thresholdCount of each emotion
+    data = normalizeData(data)
 
     words = makeDictionary(data)
     words = convertWordsToIntegers(words)
