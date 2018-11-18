@@ -3,8 +3,8 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
-training = util.readOurCsv('./data/training_set.csv')
-validation = util.readOurCsv('./data/validation_set.csv')
+training = util.readOurCsv('./data/training_set_2.csv')
+validation = util.readOurCsv('./data/validation_set_2.csv')
 
 training_data = []
 training_labels = []
@@ -48,20 +48,20 @@ validation_data = np.array(validation_data)
 validation_labels = np.array(validation_labels)
 
 # vocab_size = 14673
-vocab_size = 5000
-epochs = 500
+vocab_size = 62167
+epochs = 20
 # sgd = tf.keras.optimizers.SGD(lr=0.01, momentum=0.1, decay=0.01/epochs, nesterov=False)
 # rms = z
 
 model = tf.keras.Sequential()
 model.add(tf.keras.layers.Embedding(vocab_size, 32))
 model.add(tf.keras.layers.GlobalAveragePooling1D())
-model.add(tf.keras.layers.Dense(128, activation=tf.nn.relu))
-model.add(tf.keras.layers.Dropout(0.7, noise_shape=None, seed=None))
-model.add(tf.keras.layers.Dense(64, activation=tf.nn.relu))
-model.add(tf.keras.layers.Dropout(0.5, noise_shape=None, seed=None))
+model.add(tf.keras.layers.Dense(32, activation=tf.nn.relu))
+# model.add(tf.keras.layers.Dropout(0.7, noise_shape=None, seed=None))
+model.add(tf.keras.layers.Dense(16, activation=tf.nn.relu))
+# model.add(tf.keras.layers.Dropout(0.5, noise_shape=None, seed=None))
 # model.add(tf.keras.layers.Dense(32, activation=tf.nn.relu))
-model.add(tf.keras.layers.Dense(5, activation=tf.nn.softmax))
+model.add(tf.keras.layers.Dense(3, activation=tf.nn.softmax))
 
 model.summary()
 
@@ -72,7 +72,7 @@ model.compile(optimizer='adam',
 history = model.fit(training_data,
                     training_labels,
                     epochs=epochs,
-                    batch_size=128,
+                    batch_size=256,
                     validation_data=(validation_data, validation_labels),
                     verbose=1)
 

@@ -4,7 +4,7 @@ import json
 import re
 from random import shuffle
 
-thresholdCount = 2000
+thresholdCount = 6500
 
 
 def readOurCsv(filePath):
@@ -24,8 +24,6 @@ def readCsv(filePath):
     with open(filePath, encoding='iso-8859-1') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            if row['sentiment'] == 'neutral':
-                continue
             data.append({'sentiment': row['sentiment'], 'content': row['content']})
     return data
 
@@ -40,8 +38,10 @@ def getSentimentList(data):
             sentiments[sentiment] = 1
     sentiments_list = []
     for key, value in sentiments.items():
+        print(key, value)
         if value > thresholdCount:
             sentiments_list.append(key)
+
     return sentiments_list
 
 
@@ -92,7 +92,7 @@ def makeDictionary(data):
     print(len(frequent_words))
     # Remove the top 10 most common words and then get the 2000 most frequently used ones
     # Returns as list of words
-    word_list = list(map(lambda x: x['word'], frequent_words[20:5020]))
+    word_list = list(map(lambda x: x['word'], frequent_words))
     return word_list
 
 
@@ -106,19 +106,17 @@ def convertDataToInts(row, words):
 
 
 def splitTrainingData(data):
-    sadness = data[:2000]
-    worry = data[2000:4000]
-    surprise = data[4000:6000]
-    love = data[6000:8000]
-    happiness = data[8000:10000]
+    pos = data[0:6500]
+    neg = data[6500:13000]
+    neutral = data[13000:]
 
-    training = sadness[:1500] + worry[:1500] + surprise[:1500] + love[:1500] + happiness[:1500]
-    validation = sadness[1500::2] + worry[1500::2] + surprise[1500::2] + love[1500::2] + happiness[1500::2]
-    testing = sadness[1501::2] + worry[1501::2] + surprise[1501::2] + love[1501::2] + happiness[1501::2]
+    training = pos[0:5000] + neg[0:5000] + neutral[0:5000]
+    validation = pos[5000::2] + neg[5000::2] + neutral[5000::2]
+    testing = pos[5001::2] + neg[5001::2] + neutral[5001::2]
 
     shuffle(training)
-    shuffle(validation)
     shuffle(testing)
+    shuffle(validation)
 
     return training, validation, testing
 
@@ -148,31 +146,23 @@ def convertDataToBinary(data, sentiments):
 
 def normalizeData(data):
 
-    sadnessCount = []
-    worryCount = []
-    surpriseCount = []
-    loveCount = []
-    # funCount = 0
-    happinessCount = []
-    # reliefCount = 0
+    positiveCount = []
+    negativeCount = []
+    neutralCount = []
 
     for row in data:
-        if row['sadness'] and len(sadnessCount) < thresholdCount:
-            sadnessCount.append(row)
-        elif row['worry'] and len(worryCount) < thresholdCount:
-            worryCount.append(row)
-        elif row['surprise'] and len(surpriseCount) < thresholdCount:
-            surpriseCount.append(row)
-        elif row['love'] and len(loveCount) < thresholdCount:
-            loveCount.append(row)
-        elif row['happiness'] and len(happinessCount) < thresholdCount:
-            happinessCount.append(row)
-    newData = sadnessCount + worryCount + surpriseCount + loveCount + happinessCount
+        if row['positive'] and len(positiveCount) < thresholdCount:
+            positiveCount.append(row)
+        elif row['negative'] and len(negativeCount) < thresholdCount:
+            negativeCount.append(row)
+        elif row['neutral'] and len(neutralCount) < thresholdCount:
+            neutralCount.append(row)
+    newData = positiveCount + negativeCount + neutralCount
     return newData
 
 
 if __name__ == '__main__':
-    data = readCsv('./data/text_emotion_full.csv')
+    data = readCsv('./data/text_training_data_2.csv')
     data = removeUnusedSentiments(data)
     sentiments = getSentimentList(data)
 
@@ -183,7 +173,7 @@ if __name__ == '__main__':
 
     words = makeDictionary(data)
     words = convertWordsToIntegers(words)
-    with open('bag_of_words.json', 'w') as jsonfile:
+    with open('bag_of_words_2.json', 'w') as jsonfile:
         jsonfile.write(json.dumps(words))
 
     for row in data:
@@ -191,6 +181,6 @@ if __name__ == '__main__':
 
     training_set, validation_set, testing_set = splitTrainingData(data)
 
-    writeCsv('./data/training_set.csv', training_set)
-    writeCsv('./data/validation_set.csv', validation_set)
-    writeCsv('./data/testing_set.csv', testing_set)
+    writeCsv('./data/training_set_2.csv', training_set)
+    writeCsv('./data/validation_set_2.csv', validation_set)
+    writeCsv('./data/testing_set_2.csv', testing_set)
