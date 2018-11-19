@@ -92,7 +92,7 @@ def makeDictionary(data):
     print(len(frequent_words))
     # Remove the top 10 most common words and then get the 2000 most frequently used ones
     # Returns as list of words
-    word_list = list(map(lambda x: x['word'], frequent_words))
+    word_list = list(map(lambda x: x['word'], frequent_words[20:10020]))
     return word_list
 
 
@@ -106,13 +106,13 @@ def convertDataToInts(row, words):
 
 
 def splitTrainingData(data):
-    pos = data[0:6500]
-    neg = data[6500:13000]
-    neutral = data[13000:]
+    # pos = data[0:6500]
+    # neg = data[6500:13000]
+    # neutral = data[13000:]
 
-    training = pos[0:5000] + neg[0:5000] + neutral[0:5000]
-    validation = pos[5000::2] + neg[5000::2] + neutral[5000::2]
-    testing = pos[5001::2] + neg[5001::2] + neutral[5001::2]
+    training = data[0:30000]
+    validation = data[30000::2]
+    testing = data[30001::2]
 
     shuffle(training)
     shuffle(testing)
@@ -169,18 +169,18 @@ if __name__ == '__main__':
     data = convertDataToBinary(data, sentiments)
 
     # Normalizing data to thresholdCount of each emotion
-    data = normalizeData(data)
+    # data = normalizeData(data)
 
     words = makeDictionary(data)
     words = convertWordsToIntegers(words)
     with open('bag_of_words_2.json', 'w') as jsonfile:
         jsonfile.write(json.dumps(words))
 
-    for row in data:
-        row = convertDataToInts(row, words)
+    # for row in data:
+    #     row = convertDataToInts(row, words)
 
-    training_set, validation_set, testing_set = splitTrainingData(data)
+    # training_set, validation_set, testing_set = splitTrainingData(data)
 
-    writeCsv('./data/training_set_2.csv', training_set)
-    writeCsv('./data/validation_set_2.csv', validation_set)
-    writeCsv('./data/testing_set_2.csv', testing_set)
+    writeCsv('./data/data_set_2.csv', data)
+    # writeCsv('./data/validation_set_2.csv', validation_set)
+    # writeCsv('./data/testing_set_2.csv', testing_set)
