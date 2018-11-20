@@ -1,8 +1,13 @@
 import tweepy
+import os
 
-auth = tweepy.OAuthHandler('1SgQACbCCUF362ZgkZNj8NF8A', 'ltoHOdYOfgwOuPkiCEIyb6IX3gn7vBOMOM0vmWK466Kw5DJtsI')
-auth.set_access_token('847301221794824192-9bwDTIRSZT59Oyf4m7YgEk0iEszwLxk',
-                      'mCIEvfAV8xXRDowMxzRN2c79wLjPZbQdSMIPAweHDG7Tp')
+consumer_key = os.getenv('SOOPY_TWITTER_CONSUMER_KEY')
+consumer_private = os.getenv('SOOPY_TWITTER_CONSUMER_PRIVATE')
+api_key = os.getenv('SOOPY_TWITTER_API_KEY')
+api_secret = os.getenv('SOOPY_TWITTER_API_PRIVATE')
+
+auth = tweepy.OAuthHandler(consumer_key, consumer_private)
+auth.set_access_token(api_key, api_secret)
 
 api = tweepy.API(auth)
 
